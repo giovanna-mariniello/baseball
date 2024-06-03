@@ -29,7 +29,7 @@ class Model:
         self._ricorsioneV2(parziale)
         parziale.pop()
 
-        return self._bestPath
+        return self.getWeightsOfPath(self._bestPath)
 
     def _ricorsione(self, parziale):
         # verifico se sol attuale è migliore del best
@@ -67,7 +67,7 @@ class Model:
                     self._grafo[parziale[-2]][parziale[-1]]["weight"] >
                     v1[1]):
                 parziale.append(v1[0])
-                self._ricorsione(parziale)
+                self._ricorsioneV2(parziale)
                 parziale.pop()
                 return
         #aggiungo e faccio ricorsione
@@ -103,6 +103,13 @@ class Model:
         #     for t2 in self._grafo.nodes:
         #         if t1 != t2:
         #             self._grafo.add_edge(t1, t2)
+
+    def getWeightsOfPath(self, path):
+        listTuples = [(path[0], 0)]
+        for i in range(0, len(path)-1):
+            listTuples.append( (path[i+1], self._grafo[path[i]][path[i+1]]["weight"] ) )
+
+        return listTuples
 
     def getSortedNeighbors(self, v0):
         vicini = self._grafo.neighbors(v0)
