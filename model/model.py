@@ -95,7 +95,7 @@ class Model:
         parziale.pop()
 
 
-        return self._bestPath, self._bestScore
+        return self.get_pesi_path(self._bestPath), self._bestScore
 
     def ricorsione(self, parziale):
         # in questo caso non abbiamo vincoli di lunghezza, quindi la condzione di terminazione
@@ -113,7 +113,7 @@ class Model:
             if v not in parziale and self.is_decrescente(peso_arco, parziale):
                 parziale.append(v)
                 self.ricorsione(parziale)
-                parziale.pop(v)
+                parziale.pop()
 
     def ricorsione_v2(self, parziale):
         # versione più efficiente della ricorsione
@@ -167,6 +167,19 @@ class Model:
             return True
 
         return False
+
+    def get_pesi_path(self, path):
+
+        lista_tuple = []
+        lista_tuple.append((path[0], 0))
+
+        for i in range(0, len(path)-1):
+            lista_tuple.append((path[i+1], self._grafo[path[i]][path[i+1]]["weight"]))
+
+        return lista_tuple
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import warnings
+
 import flet as ft
 
 from UI.view import View
@@ -67,4 +69,22 @@ class Controller:
 
 
     def handlePercorso(self, e):
-        pass
+        self._view._txt_result.controls.clear()
+
+        if self.team_scelto is None:
+            warnings.warn("Squadra non selezionata")
+            self._view._txt_result.controls.append(ft.Text("Squadra non selezionata"))
+
+        nodo = self.team_scelto
+        nodi_pesi, peso_tot = self._model.get_percorso(nodo)
+
+        self._view._txt_result.controls.append(ft.Text("Percorso trovato"))
+
+        for t in nodi_pesi:
+            nodo = t[0]
+            peso_arco = t[1]
+            self._view._txt_result.controls.append(ft.Text(f"{nodo} -- {peso_arco}"))
+
+        self._view._txt_result.controls.append(ft.Text(f"Il peso totale del cammino è {peso_tot}"))
+
+        self._view.update_page()
