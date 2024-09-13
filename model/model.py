@@ -1,3 +1,4 @@
+import copy
 import itertools
 
 import networkx as nx
@@ -8,6 +9,8 @@ from model.team import Team
 
 class Model:
     def __init__(self):
+        self._bestScore = None
+        self._bestPath = None
         self._lista_anni = []
         self._grafo = nx.Graph()
         self._nodi = []
@@ -72,6 +75,102 @@ class Model:
         vicini_tuple.sort(key=lambda x:x[1], reverse=True)
 
         return vicini_tuple
+
+    def get_percorso(self, n0):
+        self._bestPath = []
+        self._bestScore = 0
+
+        parziale = [n0]
+        lista_vicini = []
+
+        for n in self._grafo.neighbors(n0):
+            peso_arco = self._grafo[n0][n]["weight"]
+            lista_vicini.append((n, peso_arco))
+
+        lista_vicini.sort(key=lambda x:x[1], reverse=True)
+
+
+        parziale.append(lista_vicini[0][0])
+        self.ricorsione_v2(parziale)
+        parziale.pop()
+
+
+        return self._bestPath, self._bestScore
+
+    def ricorsione(self, parziale):
+        # in questo caso non abbiamo vincoli di lunghezza, quindi la condzione di terminazione
+        # si ha quando non ci sono più possibili vicini da aggiungere
+
+        # verifico se sol attuale è la best
+        if self.get_score(parziale) > self._bestScore:
+            self._bestPath = copy.deepcopy(parziale)
+            self._bestScore = self.get_score(parziale)
+
+        # verifico se posso aggiungere un altro elemento
+        # aggiungo e faccio ricorsione
+        for v in self._grafo.neighbors(parziale[-1]):
+            peso_arco = self._grafo[parziale[-1]][v]["weight"]
+            if v not in parziale and self.is_decrescente(peso_arco, parziale):
+                parziale.append(v)
+                self.ricorsione(parziale)
+                parziale.pop(v)
+
+    def ricorsione_v2(self, parziale):
+        # versione più efficiente della ricorsione
+        # visto che gli archi devono essere di pesi decrescenti,
+        # tra tutti i vicini possibili, prendo quello con peso maggiore
+
+        # creo una lista di tuple (nodo_arco, peso) e la ordino per peso decrescente
+        # da questa lista prendo solo quello di peso maggiore, senza ciclare su tutti i vicini
+
+        # in questo modo riduco le chiamate alla funzione ricorsiva e quindi il metodo è più veloce
+
+        if self.get_score(parziale) > self._bestScore:
+            self._bestPath = copy.deepcopy(parziale)
+            self._bestScore = self.get_score(parziale)
+
+        lista_vicini = []
+        for v in self._grafo.neighbors(parziale[-1]):
+
+           peso_arco = self._grafo[parziale[-1]][v]["weight"]
+           lista_vicini.append((v, peso_arco))
+
+        lista_vicini.sort(key=lambda x:x[1], reverse=True)
+
+
+        for v1 in lista_vicini:
+            nodo = v1[0]
+            peso_arco = v1[1]
+            if nodo not in parziale and self.is_decrescente(peso_arco, parziale):
+                parziale.append(nodo)
+                self.ricorsione_v2(parziale)
+                parziale.pop()
+                return
+
+
+    def get_score(self, lista_nodi):
+        if(len(lista_nodi)) == 1:
+            return 0
+
+        score = 0
+
+        for i in range(0, len(lista_nodi)-1):
+            n_p = lista_nodi[i]
+            n_a = lista_nodi[i+1]
+            score += self._grafo[n_p][n_a]["weight"]
+
+        return score
+
+    def is_decrescente(self, peso_arco, parziale):
+        peso_arco_prec = self._grafo[parziale[-2]][parziale[-1]]["weight"]
+        if peso_arco < peso_arco_prec:
+            return True
+
+        return False
+
+
+
+
 
 
 
